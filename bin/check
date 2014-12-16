@@ -1,0 +1,47 @@
+#!/usr/bin/env node
+
+var async = require('async');
+var db = require('../lib/db');
+var knownCheckers = require('../lib/utilities/knownCheckers');
+
+var checkerName = process.argv[2];
+if (knownCheckers.indexOf(checkerName) < 0) {
+  throw new Error('Unknown checker');
+}
+checker = require('../lib/checkers/' + checkerName);
+
+var findQuery = {};
+findQuery[checkerName] = {$exists: false};
+
+db.find(findQuery, function(err, docs) {
+  if (err) {
+    return console.error(err);
+  }
+
+  async.eachSeries(
+    docs,
+    function(doc, callback) {
+      checker(doc.name, function(err, available) {
+        if (err) {
+          return callback(err);
+        }
+
+        var updateQuery = {$set: {}};
+        updateQuery.$set[checkerName] = available;
+        db.update({_id: doc._id}, updateQuery, {}, function(err) {
+          if (err) {
+            return callback(err);
+          }
+
+          console.log(doc.name, available);
+          callback();
+        });
+      });
+    },
+    function(err) {
+      if (err) {
+        console.error(err);
+      }
+    }
+  );
+});

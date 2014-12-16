@@ -1,0 +1,10 @@
+{
+  "name": "nickname-generator",
+  "version": "0.1.0",
+  "dependencies": {
+    "async": "~0.9",
+    "request": "~2.51",
+    "whois-available": "~0.2",
+    "nedb": "~1.0"
+  }
+}

@@ -1,0 +1,42 @@
+#!/usr/bin/env node
+
+var async = require('async');
+var db = require('../lib/db');
+var generateName = require('../lib/utilities/generateName');
+
+var counter = 0;
+var limit = /^[0-9]+$/.test(process.argv[2]) ? Number(process.argv[2]) : 100;
+
+async.until(
+  function() {
+    return counter >= limit;
+  },
+  function(callback) {
+    var name = generateName();
+
+    db.find({name: name}, function(err, docs) {
+      if (err) {
+        return callback(err);
+      }
+
+      if (docs.length > 0) {
+        return callback();
+      }
+
+      db.insert({name: name}, function(err) {
+        if (err) {
+          return callback(err);
+        }
+
+        console.log(name);
+        counter++;
+        callback();
+      });
+    });
+  },
+  function(err) {
+    if (err) {
+      console.error(err);
+    }
+  }
+);

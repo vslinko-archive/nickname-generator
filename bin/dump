@@ -1,0 +1,28 @@
+#!/usr/bin/env node
+
+var db = require('../lib/db');
+var knownCheckers = require('../lib/utilities/knownCheckers');
+
+var checkers = process.argv.slice(2);
+
+checkers.forEach(function(checker) {
+  if (knownCheckers.indexOf(checker) < 0) {
+    throw new Error('Unknown checker');
+  }
+});
+
+db.find({}, function(err, docs) {
+  if (err) {
+    return console.error(err);
+  }
+
+  docs.forEach(function(doc) {
+    var show = checkers.every(function(checker) {
+      return !!doc[checker];
+    });
+
+    if (show) {
+      console.log(doc.name);
+    }
+  });
+});
