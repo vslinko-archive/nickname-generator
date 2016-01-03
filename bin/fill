@@ -12,7 +12,7 @@ async.until(
     return counter >= limit;
   },
   function(callback) {
-    var name = generateName();
+    var name = generateName(4);
 
     db.find({name: name}, function(err, docs) {
       if (err) {
